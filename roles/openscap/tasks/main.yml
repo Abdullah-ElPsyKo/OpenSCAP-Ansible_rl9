@@ -1,0 +1,33 @@
+---
+- name: Update all packages
+  dnf:
+    name: "*"
+    state: latest
+
+- name: Install OpenSCAP scanner and SCAP security guide
+  dnf:
+    name:
+      - openscap-scanner
+      - scap-security-guide
+    state: present
+
+- name: Copy the OpenSCAP scan script
+  template:
+    src: openscap_scan.sh.j2
+    dest: /usr/local/bin/openscap_scan.sh
+    mode: '0755'
+
+- name: Copy server.py script
+  copy:
+    src: server.py
+    dest: ~/server.py
+
+- name: Ensure the cron job is present for OpenSCAP scanning
+  cron:
+    name: "OpenSCAP Scan"
+    job: "/usr/local/bin/openscap_scan.sh > /dev/null 2>&1"
+    hour: "3"
+    minute: "0"
+    day: "*"
+    month: "*"
+    weekday: "*"

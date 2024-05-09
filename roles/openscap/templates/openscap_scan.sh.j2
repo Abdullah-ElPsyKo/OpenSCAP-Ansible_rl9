@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Set variables
+OUTPUT_DIR="{{ openscap_output_dir }}"
+DATE=$(date +%Y%m%d%H%M)
+REPORT_FILE="$OUTPUT_DIR/report-$DATE.html"
+RESULTS_FILE="$OUTPUT_DIR/results-$DATE.xml"
+PROFILE="{{ openscap_profile }}"
+CONTENT="{{ openscap_content }}"
+
+# Create output directory if it doesn't exist
+mkdir -p $OUTPUT_DIR
+
+# Run the OpenSCAP scan
+oscap xccdf eval --profile $PROFILE --report $REPORT_FILE --results $RESULTS_FILE $CONTENT

@@ -1,0 +1,31 @@
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http import HTTPStatus
+import base64
+
+class AuthHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        # Check if Authorization header is present
+        if 'Authorization' not in self.headers:
+            self.send_response(HTTPStatus.UNAUTHORIZED)
+            self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
+            self.end_headers()
+            return
+
+        # Check credentials
+        auth_header = self.headers['Authorization']
+        _, encoded_credentials = auth_header.split()
+        credentials = base64.b64decode(encoded_credentials).decode().split(':')
+        username = credentials[0]
+        password = credentials[1]
+
+        # Verify username and password (replace with your logic)
+        if username == '{{ http_auth_username }}' and password == '{{ http_auth_password }}':
+            super().do_GET()
+        else:
+            self.send_response(HTTPStatus.UNAUTHORIZED)
+            self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
+            self.end_headers()
+
+server_address = ('', 8000)
+httpd = HTTPServer(server_address, AuthHandler)
+httpd.serve_forever()
