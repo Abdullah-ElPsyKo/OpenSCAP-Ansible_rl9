@@ -18,8 +18,8 @@
     mode: '0755'
 
 - name: Copy server.py script
-  copy:
-    src: server.py
+  template:
+    src: server.py.j2
     dest: ~/server.py
 
 - name: Ensure the cron job is present for OpenSCAP scanning
