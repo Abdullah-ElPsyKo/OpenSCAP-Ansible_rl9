@@ -17,8 +17,8 @@
     dest: /usr/local/bin/openscap_scan.sh
     mode: '0755'
   
-- name: Reload firewalld to apply changes
-  ansible.builtin.command: mkdir /home/scap_reports
+- name: Create scap_reports directory
+  shell: test -d /home/scap_reports || mkdir /home/scap_reports
 
 - name: Copy server.py script
   template:
@@ -59,7 +59,7 @@
     permanent: true
   loop:
     - ssh
-    - http  # if your application needs HTTP access, for example
+    - http
 
 - name: Ensure default drop for all other incoming traffic not explicitly allowed
   firewalld:
@@ -92,6 +92,6 @@
   notify: Restart rsyslog
 
 - name: Run the scan for the first time without verbose output
-  command: "/usr/local/bin/openscap_scan.sh > /dev/null 2>&1"
-  ignore_errors: yes # The output of the scan is seen as an error which can be ignored
+  command: "/usr/local/bin/openscap_scan.sh"
+  ignore_errors: yes  # Does not return zero which is why it will show as an error, can be ignored
 

@@ -12,4 +12,4 @@ CONTENT="{{ openscap_content }}"
 mkdir -p $OUTPUT_DIR
 
 # Run the OpenSCAP scan
-oscap xccdf eval --profile $PROFILE --report $REPORT_FILE --results $RESULTS_FILE $CONTENT
+oscap xccdf eval --profile $PROFILE --report $REPORT_FILE --results $RESULTS_FILE $CONTENT > /dev/null 2>&1
