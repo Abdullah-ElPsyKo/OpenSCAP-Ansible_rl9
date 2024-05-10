@@ -18,8 +18,8 @@ class AuthHandler(SimpleHTTPRequestHandler):
         username = credentials[0]
         password = credentials[1]
 
-        # Verify username and password (replace with your logic)
-        if username == '{{ http_auth_username }}' and password == '{{ http_auth_password }}':
+        # Verify username and password
+        if username == "{{ http_auth_username }}" and password == "{{ http_auth_password }}":
             super().do_GET()
         else:
             self.send_response(HTTPStatus.UNAUTHORIZED)

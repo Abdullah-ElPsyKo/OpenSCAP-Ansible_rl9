@@ -1,9 +1,6 @@
 ---
-- name: Setup Monitoring Tools
+- name: Setup OpenSCAP
   hosts: all
   become: true
-  vars:
-    http_auth_username: "user"
-    http_auth_password: "password"
   roles:
     - openscap

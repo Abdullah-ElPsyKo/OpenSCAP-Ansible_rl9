@@ -1,2 +1,9 @@
----
-# handlers file for openscap
+- name: Restart sshd
+  systemd:
+    name: sshd
+    state: restarted
+    
+- name: Restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted
