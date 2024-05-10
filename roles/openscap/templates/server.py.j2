@@ -27,5 +27,6 @@ class AuthHandler(SimpleHTTPRequestHandler):
             self.end_headers()
 
 server_address = ('', 8000)
+print(f"Listening on port {server_address[1]}")
 httpd = HTTPServer(server_address, AuthHandler)
 httpd.serve_forever()
