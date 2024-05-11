@@ -1,6 +1,6 @@
 ---
 - name: Setup OpenSCAP
-  hosts: all
+  hosts: "{{ host }}"
   become: true
   vars_files:
     - ../vars/main.yml

@@ -1,3 +1,4 @@
+  host: "rocky_servers"
   # OpenSCAP installation
   openscap_output_dir: "/home/scap_reports"
   openscap_profile: "xccdf_org.ssgproject.content_profile_anssi_bp28_high"
