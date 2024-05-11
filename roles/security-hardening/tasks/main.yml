@@ -1,0 +1,45 @@
+---
+- name: Set default zone to drop
+  firewalld:
+    zone: public
+    state: present
+    permanent: true
+    target: DROP
+
+- name: Ensure specific allowed services
+  firewalld:
+    service: "{{ item }}"
+    state: enabled
+    permanent: true
+  loop:
+    - ssh
+    - http
+
+- name: Ensure default drop for all other incoming traffic not explicitly allowed
+  firewalld:
+    rich_rule: 'rule family="ipv4" source not address="0.0.0.0/0" port port="22" protocol="tcp" accept'
+    zone: public
+    permanent: true
+    state: enabled
+    immediate: yes
+  
+- name: Reload firewalld to apply changes
+  ansible.builtin.command: firewall-cmd --reload
+
+- name: Harden SSH Configuration
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: "^PermitRootLogin", line: "PermitRootLogin {{RootLogin}}" }
+    - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication {{PasswordAuth}}" }
+    - { regexp: "^X11Forwarding", line: "X11Forwarding no" }
+    - { regexp: "^MaxAuthTries", line: "MaxAuthTries 3" }
+  notify: Restart sshd
+
+- name: Configure rsyslog for enhanced SSH logging
+  lineinfile:
+    path: /etc/rsyslog.conf
+    line: 'authpriv.*                                              /var/log/secure'
+  notify: Restart rsyslog
