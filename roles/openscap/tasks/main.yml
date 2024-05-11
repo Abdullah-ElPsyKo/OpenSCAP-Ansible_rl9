@@ -1,9 +1,4 @@
 ---
-# - name: Update all packages
-#   dnf:
-#     name: "*"
-#     state: latest
-
 - name: Install OpenSCAP scanner and SCAP security guide
   dnf:
     name:
@@ -18,22 +13,15 @@
     mode: '0755'
   
 - name: Create scap_reports directory
-  shell: test -d "{{ openscap_output_dir }}" || mkdir "{{ openscap_output_dir }}"
+  ansible.builtin.file:
+    path: "{{ openscap_output_dir }}"
+    state: directory
+    mode: '0755'
 
 - name: Copy server.py script
   template:
     src: server.py.j2
     dest: "{{ openscap_output_dir }}/server.py"
-
-- name: Ensure the cron job is present for OpenSCAP scanning
-  cron:
-    name: "OpenSCAP Scan"
-    job: "/usr/local/bin/openscap_scan.sh > /var/log/openscap_scan.log 2>&1"
-    hour: "{{ openscap_cron_hour }}"
-    minute: "{{ openscap_cron_minute }}"
-    day: "{{ openscap_cron_day }}"
-    month: "{{ openscap_cron_month }}"
-    weekday: "{{ openscap_cron_weekday }}"
 
 - name: Allow only necessary firewall ports
   firewalld:
@@ -42,7 +30,7 @@
     state: enabled
   with_items:
     - { port: "22/tcp" }
-    - { port: "8000/tcp" }  # To locally host reports.html
+    - { port: "{{port_reports}}/tcp" }  # To locally host reports.html
   when: firewall_enabled | default(true)
 
 - name: Run the scan for the first time without verbose output

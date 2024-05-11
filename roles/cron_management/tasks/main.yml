@@ -1,0 +1,9 @@
+- name: Ensure the cron job is present for OpenSCAP scanning
+  cron:
+    name: "OpenSCAP Scan"
+    job: "/usr/local/bin/openscap_scan.sh > /var/log/openscap_scan.log 2>&1"
+    hour: "{{ openscap_cron_hour }}"
+    minute: "{{ openscap_cron_minute }}"
+    day: "{{ openscap_cron_day }}"
+    month: "{{ openscap_cron_month }}"
+    weekday: "{{ openscap_cron_weekday }}"

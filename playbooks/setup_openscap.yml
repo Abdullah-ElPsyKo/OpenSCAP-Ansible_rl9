@@ -2,23 +2,10 @@
 - name: Setup OpenSCAP
   hosts: all
   become: true
-  vars:
-    # OpenSCAP installation
-    openscap_output_dir: "/home/scap_reports"
-    openscap_profile: "xccdf_org.ssgproject.content_profile_anssi_bp28_high"
-    openscap_content: "/usr/share/xml/scap/ssg/content/ssg-rl9-ds.xml"
-    # OpenSCAP cronjob
-    openscap_cron_hour: "3"
-    openscap_cron_minute: "0"
-    openscap_cron_day: "*"
-    openscap_cron_month: "*"
-    openscap_cron_weekday: "*"
-    # Password to locally hosted webpage for reports
-    http_auth_username: admin
-    http_auth_password: admin
-    # SSH hardening
-    RootLogin: "yes"
-    PasswordAuth: "yes"
+  vars_files:
+    - ../vars/main.yml
   roles:
+    - package_management
     - openscap
-    - security-hardening
+    - cron_management
+    - security_hardening
