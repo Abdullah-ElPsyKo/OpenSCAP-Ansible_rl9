@@ -43,6 +43,7 @@ Voordat u de playbooks uitvoert, moet u twee belangrijke bestanden configureren:
 
 2. **Variabelen (`vars/main.yml`):** Dit bestand bevat essentiële configuratievariabelen die gebruikt worden door verschillende rollen in het playbook. Het is cruciaal om deze variabelen correct in te stellen om te zorgen dat de Ansible rollen naar verwachting functioneren. Hieronder volgt een gedetailleerde uitleg van elke variabele:
 
+- **`host`**: Dit is het IP-adres of de hostnaam van de doelmachine waarop de Ansible-rollen worden toegepast. 
 - **`openscap_output_dir`**: Specificeert de directory op de doelhosts waar de OpenSCAP rapporten worden opgeslagen. Standaard ingesteld op "/home/scap_reports". Zorg ervoor dat de directory beschikbaar is en schrijfrechten heeft op de doelhost.
 
 - **`openscap_profile`**: Definieert het beveiligingsprofiel dat gebruikt wordt voor de OpenSCAP scans. Dit voorbeeld gebruikt "xccdf_org.ssgproject.content_profile_anssi_bp28_high", een hoog beveiligingsniveau dat geschikt is voor strenge beveiligingseisen.
@@ -210,6 +211,7 @@ Indien nog niet gedaan, genereer een SSH sleutelpaar om de communicatie tussen S
    Extra variables:
    ```json
       {
+         "host": "rocky_servers"
          "openscap_output_dir": "/home/scap_reports",
          "openscap_profile": "xccdf_org.ssgproject.content_profile_anssi_bp28_high",
          "openscap_content": "/usr/share/xml/scap/ssg/content/ssg-rl9-ds.xml",
