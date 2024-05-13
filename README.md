@@ -124,8 +124,6 @@ Configureert een cron job om regelmatig het OpenSCAP-scan script uit te voeren. 
 
 Past verschillende beveiligingsinstellingen toe zoals het configureren van de firewall om al het onnodige verkeer te laten vallen, het verharden van SSH-configuraties, en het zorgen voor instellingen voor veilige bediening.
 
-Hier is een sectie die je kunt toevoegen aan je `README.md` om uit te leggen hoe je project uitgebreid kan worden met Semaphore, een tool die het mogelijk maakt om Ansible playbooks via een grafische gebruikersinterface (GUI) te beheren en uit te voeren. Deze sectie bevat ook stap-voor-stap instructies voor de installatie van Semaphore.
-
 ### Uitbreiding met Semaphore in Rocky Linux 9
 
 Semaphore is een open-source automatiseringsserver voor Ansible, waarmee je playbooks kunt beheren en uitvoeren via een gebruiksvriendelijke grafische gebruikersinterface (GUI). Hieronder vind je de stappen om Semaphore te installeren en te configureren op een systeem met Rocky Linux 9 (Red Hat Enterprise Linux 9).
@@ -175,8 +173,6 @@ Semaphore is een open-source automatiseringsserver voor Ansible, waarmee je play
    ```bash
    sudo snap install semaphore
    ```
-
-Hier is een verbeterde versie van de sectie "Configuratie en Gebruik" voor Semaphore in je `README.md`. Deze versie is meer gestructureerd en duidelijk over de verschillende stappen:
 
 ### Configuratie en Gebruik van Semaphore
 
