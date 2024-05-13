@@ -2,3 +2,26 @@
   dnf:
     name: "*"
     state: latest
+
+- name: Install EPEL repository
+  dnf:
+    name: epel-release
+    state: present
+
+- name: Ensure Python3 and pip are installed
+  dnf:
+    name:
+      - python3
+      - python3-pip
+      - python3-setuptools
+    state: present
+
+- name: Install Python packages
+  pip:
+    name:
+      - flask
+      - werkzeug
+      - flask-limiter
+      - passlib
+      - python-dotenv
+      - cryptography

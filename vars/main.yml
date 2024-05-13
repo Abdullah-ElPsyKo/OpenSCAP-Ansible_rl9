@@ -10,10 +10,10 @@
   openscap_cron_month: "*"
   openscap_cron_weekday: "*"
   # Password for locally hosted webpage for reports
-  http_auth_username: admin
-  http_auth_password: admin
-  # Port to host the reports
-  port_reports: 8000
+  username: "admin"
+  domain_name: "localdomain.com"
+  ssl_cert_path: "/etc/ssl/private/selfsigned.crt"
+  ssl_key_path: "/etc/ssl/private/selfsigned.key"
   # SSH hardening
   RootLogin: "yes"
   PasswordAuth: "yes"

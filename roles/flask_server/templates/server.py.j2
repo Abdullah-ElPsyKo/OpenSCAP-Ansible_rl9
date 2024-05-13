@@ -1,0 +1,103 @@
+from flask import Flask, request, Response, send_from_directory, jsonify
+import os
+from werkzeug.security import check_password_hash
+import logging
+from functools import wraps
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from passlib.hash import bcrypt
+
+def load_env_vars(file_path):
+    with open(file_path) as f:
+        for line in f:
+            if line.strip() and not line.startswith('#'):
+                key, value = line.strip().split('=', 1)
+                os.environ[key] = value
+
+# Load environment variables from /etc/environment
+load_env_vars('/etc/environment')
+
+app = Flask(__name__)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+# Environment variables for credentials and SSL context
+USERNAME = os.getenv('HTTP_AUTH_USERNAME')
+PASSWORD = os.getenv('HTTP_AUTH_PASSWORD')
+CERT_PATH = os.getenv('SSL_CERT_PATH')
+KEY_PATH = os.getenv('SSL_KEY_PATH')
+
+# Generate bcrypt hash from the plain password
+PASSWORD_HASH = bcrypt.hash(PASSWORD)
+
+# Debugging: Print the loaded environment variables
+print(f"USERNAME: {USERNAME}")
+print(f"PASSWORD: {PASSWORD}")
+print(f"PASSWORD_HASH: {PASSWORD_HASH} (type: {type(PASSWORD_HASH)}, length: {len(PASSWORD_HASH)})")
+print(f"CERT_PATH: {CERT_PATH}")
+print(f"KEY_PATH: {KEY_PATH}")
+
+# Ensure the credentials and SSL paths are set
+if not USERNAME or not PASSWORD or not CERT_PATH or not KEY_PATH:
+    raise ValueError("Environment variables HTTP_AUTH_USERNAME, HTTP_AUTH_PASSWORD, SSL_CERT_PATH, and SSL_KEY_PATH must be set.")
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+
+def check_credentials(username, password):
+    """Check if provided credentials match stored ones."""
+    return username == USERNAME and bcrypt.verify(password, PASSWORD_HASH)
+
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response(
+        'Could not verify your access level for that URL.\n'
+        'You have to login with proper credentials', 401,
+        {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_credentials(auth.username, auth.password):
+            logging.warning('Unauthorized access attempt detected.')
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/')
+@requires_auth
+@limiter.limit("10 per minute")
+def index():
+    return "Hello, you are authenticated!"
+
+@app.route('/reports')
+@requires_auth
+@limiter.limit("10 per minute")
+def list_reports():
+    # List files in the directory where the script is located
+    files = os.listdir(os.path.dirname(os.path.abspath(__file__)))
+    return jsonify(files)
+
+@app.route('/reports/<path:filename>')
+@requires_auth
+@limiter.limit("10 per minute")
+def serve_report(filename):
+    # Serve files from the directory where the script is located
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), filename)
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self' 'unsafe-inline'"
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    return response
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000, ssl_context=(CERT_PATH, KEY_PATH))

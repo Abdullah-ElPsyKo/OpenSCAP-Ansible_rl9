@@ -1,4 +1,15 @@
 ---
+- name: Allow only necessary firewall ports
+  firewalld:
+    port: "{{ item }}"
+    permanent: true
+    state: enabled
+  loop:
+    - "22/tcp"
+    - "5000/tcp"  # To locally host reports.html
+    - "443/tcp"   # To allow HTTPS traffic for secure connection
+  when: firewall_enabled | default(true)
+
 - name: Set default zone to drop
   firewalld:
     zone: public
@@ -13,7 +24,7 @@
     permanent: true
   loop:
     - ssh
-    - http
+    - https
 
 - name: Ensure default drop for all other incoming traffic not explicitly allowed
   firewalld:

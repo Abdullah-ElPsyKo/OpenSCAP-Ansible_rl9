@@ -7,5 +7,6 @@
   roles:
     - package_management
     - openscap
+    - flask_server
     - cron_management
     - security_hardening

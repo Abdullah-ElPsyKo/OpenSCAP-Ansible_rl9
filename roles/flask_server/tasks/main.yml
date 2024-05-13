@@ -1,0 +1,59 @@
+---
+- name: Create directory for private SSL files
+  file:
+    path: /etc/ssl/private
+    state: directory
+    mode: '0700'
+
+- name: Generate a private key
+  openssl_privatekey:
+    path: /etc/ssl/private/selfsigned.key
+    size: 2048
+    mode: '0600'
+
+- name: Generate a CSR
+  openssl_csr:
+    path: /etc/ssl/private/selfsigned.csr
+    privatekey_path: /etc/ssl/private/selfsigned.key
+    common_name: 'localhost'
+    country_name: 'US'
+    state_or_province_name: 'State'
+    locality_name: 'City'
+    organization_name: 'Organization'
+    organizational_unit_name: 'Unit'
+    email_address: 'email@example.com'
+    mode: '0640'
+
+- name: Generate a self-signed certificate
+  command: openssl x509 -req -days 365 -in /etc/ssl/private/selfsigned.csr -signkey /etc/ssl/private/selfsigned.key -out /etc/ssl/private/selfsigned.crt
+  args:
+    creates: /etc/ssl/private/selfsigned.crt
+
+- name: Generate random password
+  set_fact:
+    http_auth_password: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}"
+
+- name: Set environment variables
+  template:
+    src: env.j2
+    dest: /etc/environment
+  vars:
+    http_auth_password: "{{ http_auth_password }}"
+    ssl_cert_path: "/etc/ssl/private/selfsigned.crt"
+    ssl_key_path: "/etc/ssl/private/selfsigned.key"
+
+- name: Ensure the environment file is sourced
+  lineinfile:
+    path: ~/.bashrc
+    line: 'source /etc/environment'
+    state: present
+
+- name: Source environment variables
+  shell: source /etc/environment
+  ignore_errors: yes
+
+- name: Copy server.py script
+  template:
+    src: server.py.j2
+    dest: "{{ openscap_output_dir }}/server.py"
+
