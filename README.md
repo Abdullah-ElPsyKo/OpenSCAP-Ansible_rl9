@@ -15,6 +15,7 @@ In deze sectie wordt de lay-out van de projectmap beschreven:
 ├── README.md              # Documentatie over het project
 ├── roles                  # Bevat alle Ansible-roles
 │   ├── cron_management    # Beheert cron-taken op de servers
+│   ├── flask_server       # Configureert de Flask-server om rapporten te hosten
 │   ├── openscap           # Installeert en configureert OpenSCAP
 │   ├── package_management # Zorgt ervoor dat de pakketten up-to-date zijn
 │   └── security_hardening # Bevat taken voor het beveiligen van de servers
@@ -43,21 +44,15 @@ Voordat u de playbooks uitvoert, moet u twee belangrijke bestanden configureren:
 
 2. **Variabelen (`vars/main.yml`):** Dit bestand bevat essentiële configuratievariabelen die gebruikt worden door verschillende rollen in het playbook. Het is cruciaal om deze variabelen correct in te stellen om te zorgen dat de Ansible rollen naar verwachting functioneren. Hieronder volgt een gedetailleerde uitleg van elke variabele:
 
-- **`host`**: Dit is het IP-adres of de hostnaam van de doelmachine waarop de Ansible-rollen worden toegepast. 
-- **`openscap_output_dir`**: Specificeert de directory op de doelhosts waar de OpenSCAP rapporten worden opgeslagen. Standaard ingesteld op "/home/scap_reports". Zorg ervoor dat de directory beschikbaar is en schrijfrechten heeft op de doelhost.
-
+- **`host`**: Dit is de naam van de doelmachine waarop de Ansible-rollen worden toegepast.
+- **`openscap_output_dir`**: Specificeert de directory op de doelhosts waar de OpenSCAP rapporten worden opgeslagen. Standaard ingesteld op "/home/scap_reports".
 - **`openscap_profile`**: Definieert het beveiligingsprofiel dat gebruikt wordt voor de OpenSCAP scans. Dit voorbeeld gebruikt "xccdf_org.ssgproject.content_profile_anssi_bp28_high", een hoog beveiligingsniveau dat geschikt is voor strenge beveiligingseisen.
-
 - **`openscap_content`**: Het pad naar de SCAP content-bestanden die gebruikt worden voor de scans. In dit geval is "/usr/share/xml/scap/ssg/content/ssg-rl9-ds.xml" aangegeven, wat specifiek is voor Red Hat Enterprise Linux 9.
-
 - **`openscap_cron_hour`**, **`openscap_cron_minute`**, **`openscap_cron_day`**, **`openscap_cron_month`**, **`openscap_cron_weekday`**: Deze instellingen bepalen het schema van de cron job die de OpenSCAP scan uitvoert. Hier ingesteld om dagelijks om 3:00 uur te draaien. Pas deze waarden aan op basis van gewenste frequentie en tijdstip.
-
-- **`http_auth_username`** en **`http_auth_password`**: Gebruikersnaam en wachtwoord voor toegang tot de lokaal gehoste webpagina waarop de OpenSCAP rapporten worden weergegeven. Dit is cruciaal voor het beveiligen van de toegang tot de rapporten.
-
-- **`port_reports`**: De netwerkpoort waarop de rapporten worden geserveerd door de HTTP-server, hier ingesteld op 8000. Zorg dat deze poort open staat op de firewall indien nodig.
-
+- **`username`**: Gebruikersnaam voor toegang tot de lokaal gehoste webpagina waarop de OpenSCAP rapporten worden weergegeven.
+- **`domain_name`**: De domeinnaam voor het HTTPS-certificaat.
+- **`ssl_cert_path`** en **`ssl_key_path`**: Paden naar het SSL-certificaat en de privésleutelbestanden die worden gebruikt voor HTTPS-verkeer. Deze worden ingesteld door de Flask-server configuratie.
 - **`RootLogin`** en **`PasswordAuth`**: Configuraties voor het verharden van SSH-toegang. `RootLogin` staat hier toe dat root direct kan inloggen (`yes`). `PasswordAuth` staat toe dat authenticatie met een wachtwoord mogelijk is (`yes`). Afhankelijk van je beveiligingsbeleid wil je deze waarden mogelijk aanpassen.
-
 
 Om de beschikbare profielen uit je OpenSCAP datastream te includeren in je documentatie of configuratiebestanden, kun je een sectie toevoegen in `vars/main.yml` of een aparte documentatiegedeelte creëren om de verschillende profielen te beschrijven die gebruikt kunnen worden. Hieronder een voorstel hoe je dit kunt opnemen in je documentatie:
 
@@ -116,6 +111,10 @@ Zorgt ervoor dat alle pakketten zijn bijgewerkt naar hun laatste versie om uw sy
 
 Installeert de benodigde pakketten voor OpenSCAP, configureert het scanscript, zet een server op om de rapporten te hosten en configureert de firewall om toegang tot de report server toe te staan.
 
+### Flask Server
+
+Configureert een Flask-server om OpenSCAP-rapporten te hosten, inclusief het genereren en beheren van zelf-ondertekende SSL-certificaten voor HTTPS-verkeer. Zorgt ervoor dat de Flask-server veilig toegankelijk is en beschermd met authenticatie. 
+
 ### Cron Management
 
 Configureert een cron job om regelmatig het OpenSCAP-scan script uit te voeren. Het schema voor deze job wordt gecontroleerd door de variabelen in `vars/main.yml`.
@@ -123,6 +122,7 @@ Configureert een cron job om regelmatig het OpenSCAP-scan script uit te voeren. 
 ### Security Hardening
 
 Past verschillende beveiligingsinstellingen toe zoals het configureren van de firewall om al het onnodige verkeer te laten vallen, het verharden van SSH-configuraties, en het zorgen voor instellingen voor veilige bediening.
+
 
 ### Uitbreiding met Semaphore in Rocky Linux 9
 
@@ -207,7 +207,6 @@ Indien nog niet gedaan, genereer een SSH sleutelpaar om de communicatie tussen S
    Extra variables:
    ```json
       {
-         "host": "rocky_servers"
          "openscap_output_dir": "/home/scap_reports",
          "openscap_profile": "xccdf_org.ssgproject.content_profile_anssi_bp28_high",
          "openscap_content": "/usr/share/xml/scap/ssg/content/ssg-rl9-ds.xml",
